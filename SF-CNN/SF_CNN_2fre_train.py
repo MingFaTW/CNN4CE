@@ -3,6 +3,7 @@ from keras.models import Model, Sequential
 from keras.optimizers import SGD, Adam, RMSprop
 from keras.callbacks import ModelCheckpoint
 from keras.models import load_model
+from tensorflow.python.keras import layers
 from numpy import *
 import numpy as np
 import numpy.linalg as LA

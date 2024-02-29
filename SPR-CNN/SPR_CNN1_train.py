@@ -1,22 +1,17 @@
-from keras.layers import Input, Dense, Dropout, Convolution2D, MaxPool2D, normalization
+from keras.layers import Input, Dense, Dropout, Conv2D, BatchNormalization
 from keras.models import Model, Sequential
-from keras.optimizers import SGD, Adam, RMSprop
+from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
 from keras.models import load_model
-from numpy import *
 import numpy as np
 import numpy.linalg as LA
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import tensorflow as tf
-config = tf.ConfigProto()
-config.gpu_options.allow_growth=True   #allow growth
-session = tf.Session(config=config)
 import scipy.io as sio
 
 Nt=32
 Nr=16
-SNR=10.0**(20/10.0) # transmit power
+SNR=20.0**(20/10.0) # transmit power
 # DFT matrix
 def DFT_matrix(N):
     m, n = np.meshgrid(np.arange(N), np.arange(N))
@@ -52,14 +47,15 @@ time_steps=1
 ############## training set generation ##################
 data_num_train=500
 data_num_file=500
-H_train=zeros((data_num_train,Nr,Nt,2*fre), dtype=float)
-H_train_noisy=zeros((data_num_train,Nr,Nt,2*fre*time_steps), dtype=float)
-filedir = os.listdir('D:\\2fre4time_data')
+H_train=np.zeros((data_num_train,Nr,Nt,2*fre), dtype=float)
+H_train_noisy=np.zeros((data_num_train,Nr,Nt,2*fre*time_steps), dtype=float)
+filedir = os.listdir('/Users/limingfa/git/CNN4CE/SPR-CNN/2fre4time_data')
 n=0
-SNRr=0
+SNRr=5
 SNR_factor=5.9
 for filename in filedir:
-    newname = os.path.join('D:\\2fre4time_data', filename)
+    newname = os.path.join('/Users/limingfa/git/CNN4CE/SPR-CNN/2fre4time_data', filename)
+      
     data = sio.loadmat(newname)
     channel = data['ChannelData_fre']
     for i in range(data_num_file):
@@ -94,14 +90,14 @@ print(H_train.shape,H_train_noisy.shape)
 ############## testing set generation ##################
 data_num_test=500
 data_num_file=500
-H_test=zeros((data_num_test,Nr,Nt,2*fre), dtype=float)
-H_test_noisy=zeros((data_num_test,Nr,Nt,2*fre*time_steps), dtype=float)
-filedir = os.listdir('D:\\2fre4time_data') # type the path of testing data (Testing data should be different from training data. Here use the same data just for ease of demonstration.)
+H_test=np.zeros((data_num_test,Nr,Nt,2*fre), dtype=float)
+H_test_noisy=np.zeros((data_num_test,Nr,Nt,2*fre*time_steps), dtype=float)
+filedir = os.listdir('/Users/limingfa/git/CNN4CE/SPR-CNN/2fre4time_data') # type the path of testing data (Testing data should be different from training data. Here use the same data just for ease of demonstration.)
 n=0
 SNRr=0
 SNR_factor=5.9
 for filename in filedir:
-    newname = os.path.join('D:\\2fre4time_data', filename)
+    newname = os.path.join('/Users/limingfa/git/CNN4CE/SPR-CNN/2fre4time_data', filename)
     data = sio.loadmat(newname)
     channel = data['ChannelData_fre']
     for i in range(data_num_file):
@@ -137,33 +133,33 @@ print(((H_test)**2).mean())
 K=3
 input_dim=(Nr,Nt,2*fre*time_steps)
 model = Sequential()
-model.add(Convolution2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu', input_shape=input_dim))
-model.add(normalization.BatchNormalization())
-model.add(Convolution2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
-model.add(normalization.BatchNormalization())
-model.add(Convolution2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
-model.add(normalization.BatchNormalization())
-model.add(Convolution2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
-model.add(normalization.BatchNormalization())
-model.add(Convolution2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
-model.add(normalization.BatchNormalization())
-model.add(Convolution2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
-model.add(normalization.BatchNormalization())
-model.add(Convolution2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
-model.add(normalization.BatchNormalization())
-model.add(Convolution2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
-model.add(normalization.BatchNormalization())
-model.add(Convolution2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
-model.add(normalization.BatchNormalization())
-model.add(Convolution2D(filters=2*fre, kernel_size=(K,K), padding='Same', activation='tanh'))
+model.add(Conv2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu', input_shape=input_dim))
+model.add(BatchNormalization())
+model.add(Conv2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
+model.add(BatchNormalization())
+model.add(Conv2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
+model.add(BatchNormalization())
+model.add(Conv2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
+model.add(BatchNormalization())
+model.add(Conv2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
+model.add(BatchNormalization())
+model.add(Conv2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
+model.add(BatchNormalization())
+model.add(Conv2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
+model.add(BatchNormalization())
+model.add(Conv2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
+model.add(BatchNormalization())
+model.add(Conv2D(filters=64, kernel_size=(K,K), padding='Same', activation='relu'))
+model.add(BatchNormalization())
+model.add(Conv2D(filters=2*fre, kernel_size=(K,K), padding='Same', activation='tanh'))
 
 # checkpoint
-filepath='2fre4time_SNR20_time1_32_16_200ep.hdf5'
+filepath = '2fre4time_SNR20_time1_32_16_200ep.keras'
 
 checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
 callbacks_list = [checkpoint]
 
-adam=Adam(lr=1e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+adam=Adam(learning_rate=1e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
 model.compile(optimizer=adam, loss='mse')
 model.fit(H_train_noisy, H_train, epochs=200, batch_size=128, callbacks=callbacks_list, verbose=2, shuffle=True, validation_split=0.1)
 
@@ -171,7 +167,7 @@ model.fit(H_train_noisy, H_train, epochs=200, batch_size=128, callbacks=callback
 CNN = load_model('2fre4time_SNR20_time1_32_16_200ep.hdf5')
 
 decoded_channel = CNN.predict(H_test_noisy)
-nmse2=zeros((data_num_test-len(row_num),1), dtype=float)
+nmse2=np.zeros((data_num_test-len(row_num),1), dtype=float)
 for n in range(data_num_test-len(row_num)):
     MSE=((H_test[n,:,:,:]-decoded_channel[n,:,:,:])**2).sum()
     norm_real=((H_test[n,:,:,:])**2).sum()
